@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
+import static org.mockito.Mockito.*;
 
 public class AndrewWebServicesTest {
     Database database;
@@ -45,4 +46,30 @@ public class AndrewWebServicesTest {
         // How should we test that no email has been sent in certain situations (like right after logging in)?
         // Hint: is there something from Mockito that seems useful here?
     }
+    @Test
+    public void testLogIn_withFakeDatabase() {
+    InMemoryDatabase fakeDb = new InMemoryDatabase();
+    fakeDb.addUser("testuser", "1234");
+    boolean result = fakeDb.authenticate("testuser", "1234");
+    assertTrue(result);
+    }
+    @Test
+    public void testGetRecommendation_withStubService() {
+    RecommendationService stub = new RecommendationService() {
+        @Override
+        public String getRecommendation(String userId) {
+            return "Try our new product!";
+        }
+    };
+    String recommendation = stub.getRecommendation("user123");
+    assertEquals("Try our new product!", recommendation);
+    }
+    @Test
+    public void testSendPromoEmail_withMock() {
+    EmailService mockEmailService = mock(EmailService.class);
+    PromoNotifier notifier = new PromoNotifier(mockEmailService);
+    notifier.sendPromotion("user@example.com");
+    verify(mockEmailService).sendPromoEmail("user@example.com", "Check out our latest offers!");
+    }
+
 }
